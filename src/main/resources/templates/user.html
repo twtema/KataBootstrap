@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security" lang="en">
+
+<head>
+    <title>Spring Security</title>
+</head>
+
+<body class="container mt-5">
+<h1>
+    <span>Welcome to the site,</span>
+    <span th:text="${user.getUsername()}">Subtitle</span>
+</h1>
+
+<table class="table">
+    <tr>
+        <th scope="col" class="h5">Your id</th>
+        <th scope="col" class="h5">Your username</th>
+        <th scope="col" class="h5">Roles</th>
+    </tr>
+    <tr>
+        <td>
+            <p th:text="${user.getId()}" class="h6">VALUE</p>
+        </td>
+        <td>
+            <p th:text="${user.getUsername()}" class="h6">VALUE</p>
+        </td>
+
+        <td>
+            <span th:object="${user}" th:each="role,iterStat: ${user.getRoles()}" th:text="${role.name} + ${iterStat.last ? '' : ', '}" >VALUE</span>
+        </td>
+    </tr>
+</table>
+<br/>
+<div class="d-flex">
+    <a sec:authorize="hasAuthority('ROLE_ADMIN')" class="btn btn-primary mr-2" th:href="@{/admin/user/{id}/edit (id=${user.getId()})}">Edit</a>
+    <a sec:authorize="hasAuthority('ROLE_ADMIN')" class="btn btn-danger" th:href="@{/admin/delete/{id}(id=${user.id})}">Delete</a>
+</div>
+
+<br/>
+
+
+<a sec:authorize="hasRole('ROLE_ADMIN')" class="btn btn-secondary" th:href="@{/admin/user}">For admin</a>
+
+<a class="btn btn-danger" th:href="@{/logout}">Logout</a>
+</body>
