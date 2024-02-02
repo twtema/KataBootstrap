@@ -1,22 +1,37 @@
 package ru.kata.spring.boot_security.demo.configs;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.templateresolver.ITemplateResolver;
+import ru.kata.spring.boot_security.demo.security.DatabaseUserDetailService;
 
-@Configuration
+
+
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
+    private DatabaseUserDetailService databaseUserDetailService;
 
     public WebSecurityConfig(SuccessUserHandler successUserHandler) {
         this.successUserHandler = successUserHandler;
+    }
+
+    @Autowired
+    public void setCustomUserDetailService(
+            DatabaseUserDetailService databaseUserDetailService) {
+        this.databaseUserDetailService = databaseUserDetailService;
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 
     @Override
@@ -24,26 +39,31 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .authorizeRequests()
                 .antMatchers("/", "/index").permitAll()
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                 .anyRequest().authenticated()
                 .and()
                 .formLogin().successHandler(successUserHandler)
                 .permitAll()
                 .and()
-                .logout()
+                .logout().logoutSuccessUrl("/login")
                 .permitAll();
     }
 
-    // аутентификация inMemory
     @Bean
-    @Override
-    public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withDefaultPasswordEncoder()
-                        .username("user")
-                        .password("user")
-                        .roles("USER")
-                        .build();
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider =
+                new DaoAuthenticationProvider();
+        authenticationProvider.setPasswordEncoder(bCryptPasswordEncoder());
+        authenticationProvider.setUserDetailsService(databaseUserDetailService);
+        return authenticationProvider;
+    }
 
-        return new InMemoryUserDetailsManager(user);
+    @Bean
+    public SpringTemplateEngine templateEngine(ITemplateResolver templateResolver) {
+        final SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+        templateEngine.setTemplateResolver(templateResolver);
+        templateEngine.addDialect(new SpringSecurityDialect()); // Enable use of "sec"
+        return templateEngine;
     }
 }
