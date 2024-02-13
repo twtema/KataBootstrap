@@ -129,7 +129,7 @@
                                 </div>
                             </div>
                         </div>
-                        <!--                            USERS TABLE             -->
+<!--                            USERS TABLE             -->
 
 
                         <!--                        добавление пользователя-->
@@ -250,7 +250,7 @@
 
 
 
-<!--Модальное окно редактирования-->
+<!--EDIT MODAL-->
 <div th:if="${editUser != null}" class="modal fade" id="editModal"
      tabindex="-1" aria-labelledby="editModal" aria-hidden="true">
     <div class="modal-dialog">
@@ -275,6 +275,16 @@
                         <label for="editModalUsername" th:if="${!#fields.hasErrors('username')}">Username</label>
                         <label for="editModalUsername" th:errors="*{username}"
                                th:if="${#fields.hasErrors('username')}"></label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input id="editModalFirstName"
+                               placeholder="Фамилия"
+                               th:class="${#fields.hasErrors('firstName')}? 'class= form-control is-invalid' : 'class= form-control'"
+                               th:field="*{firstName}">
+                        <label for="editModalLastName" th:if="${!#fields.hasErrors('firstName')}">First name</label>
+                        <label for="editModalLastName" th:errors="*{firstName}"
+                               th:if="${#fields.hasErrors('firstName')}"></label>
                     </div>
 
                     <div class="form-floating mb-3">
@@ -353,7 +363,7 @@
 </div>
 
 
-<!--Модальное окно удаления-->
+<!--DELETE MODAL-->
 <div th:if="${deleteUser != null}" class="modal fade" id="deleteModal"
      tabindex="-1" aria-labelledby="deleteModal" aria-hidden="true">
     <div class="modal-dialog">

@@ -11,6 +11,8 @@ import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
+import java.security.Principal;
+import java.util.Set;
 
 @Controller
 @RequestMapping("/admin")
@@ -28,56 +30,72 @@ public class AdminController {
         this.encoder = encoder;
     }
 
-    @GetMapping("/user")
-    public String getUsers(Model model) {
+    @GetMapping("")
+    public String adminPage(Model model, Principal principal) {
+        User user = userService.getUserByName(principal.getName());
+        model.addAttribute("user", user);
         model.addAttribute("users", userService.getUsers());
-        return "users";
+        model.addAttribute("roles", roleService.getListRoles());
+        return "admin";
     }
 
-    @GetMapping("/user/{id}")
-    public String getUserById(@PathVariable("id") Long id, Model model) {
-        model.addAttribute("user", userService.getUserById(id));
-        return "user";
+
+    @GetMapping("/edit/{id}")
+    public String editUser ( @PathVariable("id") long id, Model model){
+        model.addAttribute("editUser", userService.getUserById(id));
+        model.addAttribute("users", userService.getUsers());
+        model.addAttribute("roles", roleService.getListRoles());
+        return "/admin";
     }
 
-    @GetMapping("/new")
-    public String showAddUser(@ModelAttribute("user") User user, Model model) {
-        model.addAttribute("listRoles", roleService.getListRoles());
-        return "new";
-    }
 
-    @PostMapping("/user")
-    public String createUser(
-            @ModelAttribute("user") @Valid User user, BindingResult result) {
-        if (result.hasErrors()) {
-            return "new";
-        }
-        userService.addUser(user);
-        return "redirect:/admin/user";
-    }
+    @PatchMapping("/edit/{id}")
+    public String update(@PathVariable("id") long id, @ModelAttribute("editUser") @Valid User updateUser, BindingResult bindingResult,
+                         @RequestParam(value = "roles", required = false) Set<Long> roleIds) {
 
-    @GetMapping("/user/{id}/edit")
-    public String showEditUser(
-            Model model, @PathVariable("id") Long id, Model roles) {
-        roles.addAttribute("listRoles", roleService.getListRoles());
-        model.addAttribute("user", userService.getUserById(id));
-        return "edit";
-    }
+        if (bindingResult.hasErrors())
+            return "/admin";
 
-    @PostMapping("/user/{id}")
-    public String editUser(@ModelAttribute("user") @Valid User user,
-                           @PathVariable("id") Long id, BindingResult result) {
-        if (result.hasErrors()) {
-            return "edit";
-        }
-        userService.editUser(id, user);
-        return "redirect:/admin/user";
+//        userService.editUserAndHisRoles(id, updateUser, roleIds);
+
+        userService.editUser(id, updateUser);
+        return "redirect:/admin";
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteUser(@PathVariable("id") Long id) {
-        this.userService.deleteUser(id);
-        return "redirect:/admin/user";
+    public String deleteUser(@PathVariable("id") long id,
+                             @ModelAttribute("deleteUser") User deleteUser,
+                             Model model) {
+        model.addAttribute("users", userService.getUsers());
+        model.addAttribute("deleteUser", userService.getUserById(id));
+        return "/admin";
     }
 
+    @DeleteMapping("/delete/{id}")
+    public String delete(@PathVariable("id") long id) {
+        userService.deleteUser(id);
+        return "redirect:/admin";
+    }
+
+    @GetMapping("/add")
+    public String registrationPage(@ModelAttribute("user") User user, Model model) {
+        model.addAttribute("users", userService.getUsers());
+        model.addAttribute("roles", roleService.getListRoles());
+        return "/admin";
+    }
+
+    @PostMapping("/add")
+    public String performRegistration(@ModelAttribute("person") @Valid User user, BindingResult bindingResult,
+                                      @RequestParam(value = "roles", required = false) Set<Integer> roleIds) {
+
+        if (bindingResult.hasErrors())
+            return "/admin";
+
+        userService.addUser(user);
+        return "redirect:/admin";
+    }
+
+
 }
+
+

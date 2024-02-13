@@ -14,6 +14,7 @@ import ru.kata.spring.boot_security.demo.security.DatabaseUserDetailService;
 
 
 
+
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final SuccessUserHandler successUserHandler;
@@ -36,18 +37,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeRequests()
-                .antMatchers("/", "/index").permitAll()
+        http.authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
-                .anyRequest().authenticated()
+                .antMatchers("/login", "/error").permitAll()
+                .anyRequest().hasAnyRole("USER", "ADMIN")
                 .and()
-                .formLogin().successHandler(successUserHandler)
-                .permitAll()
+                .formLogin()
+                .successHandler(successUserHandler)
+                .failureUrl("/login?error")
                 .and()
-                .logout().logoutSuccessUrl("/login")
-                .permitAll();
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login");
     }
 
     @Bean

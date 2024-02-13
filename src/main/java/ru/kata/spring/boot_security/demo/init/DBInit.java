@@ -34,12 +34,12 @@ public class DBInit {
         System.out.println(adminRoleSet.add(roleUser));
         System.out.println(userRoleSet.add(roleUser));
         User admin = new User(
-                "admin1", "admin1", 10);
-        User admin2 = new User("admin2", "admin2", 15);
+                "admin1", "admin1", "Ivan", "Ivanov", "ivanov@mail.com", 18 );
+        User admin2 = new User("admin2", "admin2", "Oleg", "Olegov", "olegov@mail.com", 15);
 
-        User user1 = new User("user1", "user1", 20);
+        User user1 = new User("user1", "user1", "Alexander", "Alexandrov", "alexandr@Mail.com", 20);
         User user2 = new User(
-                "user2", "user2", 25);
+                "user2", "user2", "Maria", "Ivanova", "ivanova@mail.com", 25);
         admin.setRoles(adminRoleSet);
         admin2.setRoles(adminRoleSet);
         user1.setRoles(userRoleSet);

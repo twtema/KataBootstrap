@@ -4,6 +4,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -18,17 +19,34 @@ public class User implements UserDetails {
     @Column
     private String password;
 
+
+
+    @Column (name = "firstName")
+    private String firstName;
+
+    @Column (name = "lastName")
+    private String lastName;
+
+    @Column (name = "email")
+    private String email;
+
     @Column (name = "age")
     private int age;
 
-    public User(String username, String password, int age) {
-        this.username = username;
-        this.password = password;
-        this.age = age;
-    }
+
 
     public User() {
     }
+
+    public User(String username, String password, String firstName, String lastName, String email, int age) {
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.age = age;
+    }
+
 
     public Collection<Role> getRoles() {
         return roles;
@@ -104,12 +122,33 @@ public class User implements UserDetails {
         this.age = age;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
+        return Objects.hash(id, username, lastName, age, email, password);
     }
 
     @Override
@@ -127,5 +166,15 @@ public class User implements UserDetails {
         } else if (!id.equals(other.getId()))
             return false;
         return true;
+    }
+
+    public String getRolesString() {
+        if (roles.toString().contains("ADMIN") && roles.toString().contains("USER")) {
+            return "ADMIN USER";
+        } else if (roles.toString().contains("USER")) {
+            return "USER";
+        } else if (roles.toString().contains("ADMIN")) {
+            return "ADMIN";
+        } return "NO ROLES";
     }
 }
